@@ -93,6 +93,7 @@ def is_contract(address, network_name):
 
     return 1 if bytecode != "0x" else 0
 
+
 def collect_abnormal_address():
     global abnormal_address_df
 
@@ -113,6 +114,7 @@ def collect_abnormal_address():
             )
             if not exists:
                 abnormal_address_df.loc[len(abnormal_address_df)] = new_row
+
 
 def collect_normal_address():
     global transaction_raw_df
@@ -137,6 +139,7 @@ def collect_normal_address():
 
     # print(normal_address_df.shape)
     # print(normal_address_df.head(3))
+
 
 def collect_abnormal_transaction():
     global abnormal_address_df
@@ -254,11 +257,11 @@ def collect_abnormal_transaction():
     # print(transaction_raw_df.iloc[0])
     # print(transaction_raw_df.iloc[0]['hash'])
 
+
 def collect_normal_transaction():
     global normal_address_df
     global transaction_raw_df
     global normal_address_index
-    
 
     # url = f"https://api.etherscan.io/api?module=account&action=txlist&address=0x148426fDC4C8a51b96b4BEd827907b5FA6491aD0&startblock=0&endblock=99999999&page=1&offset=10000&sort=asc&apikey=SIHIX7SCIYTGBS54GTVQQA2W5GXDISD9XU"
 
@@ -267,16 +270,14 @@ def collect_normal_transaction():
     # print("len(data): ", type(data))
     # print("len(data): ", len(data))
     # print("data: ", data[0])
-    
 
     while True:
         if normal_address_index > normal_address_df.shape[0]:
             return
-    
-        normal_address_index += 1
 
         address = normal_address_df.iloc[normal_address_index]
-
+        normal_address_index += 1
+        print(address)
         print("##############################")
         contract_list = []
         network_name = address["network_name"]
@@ -373,13 +374,11 @@ def collect_normal_transaction():
                 [transaction_raw_df, pd.DataFrame([new_row])], ignore_index=True
             )
 
-    
-
 
 def merge_network_name():
     global transaction_raw_df
 
-    # Thêm tiền tố 'network_name' vào cột 'hash'
+    # Add prefix 'network_name' to column 'hash'
     transaction_raw_df["hash"] = (
         transaction_raw_df["hash"] + "-" + transaction_raw_df["network_name"]
     )
@@ -390,8 +389,8 @@ def merge_network_name():
         transaction_raw_df["to_address"] + "-" + transaction_raw_df["network_name"]
     )
 
-    # Xóa cột 'network_name'
-    transaction_raw_df = transaction_raw_df.drop("network_name", axis=1)
+    # Delete 'network_name'
+    # transaction_raw_df = transaction_raw_df.drop("network_name", axis=1)
 
 
 # Main code
@@ -403,13 +402,20 @@ collect_abnormal_transaction()
 collect_normal_address()
 normal_address_df.to_csv("Normal_address_raw.csv", index=False)
 
+# normal_address_df = pd.read_csv("Normal_address_raw.csv")
+# transaction_raw_df = pd.read_csv("Transaction_raw.csv")
+
 normal_address_index = 0
 threadNumber = 4
 threads = []
 for threadNo in range(threadNumber):
-    thread = threading.Thread(target=collect_normal_transaction, args=(threadNo,))
+    thread = threading.Thread(target=collect_normal_transaction)
     threads.append(thread)
     thread.start()
+
+# Waiting for all threads
+for thread in threads:
+    thread.join()
 
 merge_network_name()
 
