@@ -217,6 +217,7 @@ def collect_abnormal_transaction():
 
             if item["from"] == address["address"] and item["to"] == address["address"]:
                 print("Dulicate!!!")
+                continue
 
             if (
                 abnormal_address_df["address"]
@@ -262,6 +263,7 @@ def collect_normal_transaction():
     global normal_address_df
     global transaction_raw_df
     global normal_address_index
+    normal_address_df_length = normal_address_df.shape[0]
 
     # url = f"https://api.etherscan.io/api?module=account&action=txlist&address=0x148426fDC4C8a51b96b4BEd827907b5FA6491aD0&startblock=0&endblock=99999999&page=1&offset=10000&sort=asc&apikey=SIHIX7SCIYTGBS54GTVQQA2W5GXDISD9XU"
 
@@ -272,12 +274,11 @@ def collect_normal_transaction():
     # print("data: ", data[0])
 
     while True:
-        if normal_address_index > normal_address_df.shape[0]:
+        if normal_address_index + 1 > normal_address_df_length:
             return
 
-        address = normal_address_df.iloc[normal_address_index]
         normal_address_index += 1
-        print(address)
+        address = normal_address_df.iloc[normal_address_index]
         print("##############################")
         contract_list = []
         network_name = address["network_name"]
@@ -303,6 +304,10 @@ def collect_normal_transaction():
 
             # Check tx exists
             # print(item["hash"])
+            if type(item["hash"]) != str:
+                print("Checking tx failed")
+                exit()
+
             network_names = transaction_raw_df.loc[
                 transaction_raw_df["hash"] == item["hash"], "network_name"
             ].tolist()
@@ -341,6 +346,7 @@ def collect_normal_transaction():
 
             if item["from"] == address["address"] and item["to"] == address["address"]:
                 print("Dulicate!!!")
+                continue
 
             # if (
             #     normal_address_df["address"]
@@ -394,30 +400,44 @@ def merge_network_name():
 
 
 # Main code
+#############################################################
+######################## PART 1 #############################
+# start_time = time.time()
+
+# collect_abnormal_address()
+# abnormal_address_df.to_csv("Abnormal_address_raw.csv", index=False)
+# collect_abnormal_transaction()
+
+# # Save transaction_raw_df
+# transaction_raw_df.to_csv("Transaction_raw_checkpoint.csv", index=False)
+
+# collect_normal_address()
+# normal_address_df.to_csv("Normal_address_raw.csv", index=False)
+# end_time = time.time()
+# execution_time = end_time - start_time
+# print(f"Execution time: {execution_time:.6f} seconds")
+
+#############################################################
+######################## PART 2 #############################
+
+normal_address_df = pd.read_csv("Normal_address_raw.csv")
+transaction_raw_df = pd.read_csv("Transaction_raw_checkpoint.csv")
+
 start_time = time.time()
-
-collect_abnormal_address()
-abnormal_address_df.to_csv("Abnormal_address_raw.csv", index=False)
-collect_abnormal_transaction()
-collect_normal_address()
-normal_address_df.to_csv("Normal_address_raw.csv", index=False)
-
-# normal_address_df = pd.read_csv("Normal_address_raw.csv")
-# transaction_raw_df = pd.read_csv("Transaction_raw.csv")
-
-normal_address_index = 0
-threadNumber = 4
+normal_address_index = -1
+threadNumber = 10
 threads = []
 for threadNo in range(threadNumber):
     thread = threading.Thread(target=collect_normal_transaction)
     threads.append(thread)
     thread.start()
-
+# collect_normal_transaction()
 # Waiting for all threads
 for thread in threads:
     thread.join()
 
-merge_network_name()
+
+# merge_network_name()
 
 end_time = time.time()
 execution_time = end_time - start_time
