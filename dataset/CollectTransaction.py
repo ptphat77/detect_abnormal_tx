@@ -1,9 +1,10 @@
 import pandas as pd
 import requests
 import time
+import threading
 
 # Đọc file Excel
-data = pd.read_excel("./Table02-Transaction.xlsx")
+data = pd.read_excel("./dataset/Table02-Transaction.xlsx")
 
 # cell_value = data.loc[1, 'Event Name']
 
@@ -35,7 +36,7 @@ def http_request(url):
     except Exception as e:
         print(f"An error occurred: {str(e)}")
         # handle exceeded limit request
-        time.sleep(1000)
+        time.sleep(7000)
         http_request(url)
 
 
@@ -256,6 +257,8 @@ def collect_abnormal_transaction():
 def collect_normal_transaction():
     global normal_address_df
     global transaction_raw_df
+    global normal_address_index
+    
 
     # url = f"https://api.etherscan.io/api?module=account&action=txlist&address=0x148426fDC4C8a51b96b4BEd827907b5FA6491aD0&startblock=0&endblock=99999999&page=1&offset=10000&sort=asc&apikey=SIHIX7SCIYTGBS54GTVQQA2W5GXDISD9XU"
 
@@ -264,8 +267,16 @@ def collect_normal_transaction():
     # print("len(data): ", type(data))
     # print("len(data): ", len(data))
     # print("data: ", data[0])
+    
 
-    for _, address in normal_address_df.iterrows():
+    while True:
+        if normal_address_index > normal_address_df.shape[0]:
+            return
+    
+        normal_address_index += 1
+
+        address = normal_address_df.iloc[normal_address_index]
+
         print("##############################")
         contract_list = []
         network_name = address["network_name"]
@@ -362,12 +373,7 @@ def collect_normal_transaction():
                 [transaction_raw_df, pd.DataFrame([new_row])], ignore_index=True
             )
 
-        # Stop after collect all transactions of first address
-        # break
-
-    # print(transaction_raw_df.shape)
-    # print(transaction_raw_df.iloc[0])
-    # print(transaction_raw_df.iloc[0]['hash'])
+    
 
 
 def merge_network_name():
@@ -396,11 +402,19 @@ abnormal_address_df.to_csv("Abnormal_address_raw.csv", index=False)
 collect_abnormal_transaction()
 collect_normal_address()
 normal_address_df.to_csv("Normal_address_raw.csv", index=False)
-collect_normal_transaction()
+
+normal_address_index = 0
+threadNumber = 4
+threads = []
+for threadNo in range(threadNumber):
+    thread = threading.Thread(target=collect_normal_transaction, args=(threadNo,))
+    threads.append(thread)
+    thread.start()
+
 merge_network_name()
 
 end_time = time.time()
 execution_time = end_time - start_time
-print(f"Thời gian chạy: {execution_time:.6f} giây")
+print(f"Execution time: {execution_time:.6f} seconds")
 
 transaction_raw_df.to_csv("Transaction_raw.csv", index=False)
