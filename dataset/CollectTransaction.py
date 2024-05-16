@@ -431,6 +431,7 @@ for threadNo in range(threadNumber):
     thread = threading.Thread(target=collect_normal_transaction)
     threads.append(thread)
     thread.start()
+    time.sleep(3)
 # collect_normal_transaction()
 # Waiting for all threads
 for thread in threads:
