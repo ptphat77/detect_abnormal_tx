@@ -349,39 +349,17 @@ def collect_normal_transaction():
                 print("Dulicate!!!")
                 continue
 
-            # if (
-            #     normal_address_df["address"]
-            #     .str.lower()
-            #     .isin([new_row["from_address"].lower()])
-            #     .any()
-            # ):
-            #     new_row["from_exploit"] = 0
-            # if (
-            #     normal_address_df["address"]
-            #     .str.lower()
-            #     .isin([new_row["to_address"].lower()])
-            #     .any()
-            # ):
-            #     new_row["to_exploit"] = 0
-
-            # if new_row["from_address"] in contract_list:
-            #     new_row["from_is_contract"] = 1
-            # elif is_contract(new_row["from_address"], network_name):
-            #     new_row["from_is_contract"] = 1
-            #     contract_list.append(new_row["from_address"])
-            # if new_row["to_address"] in contract_list:
-            #     new_row["to_is_contract"] = 1
-            # elif is_contract(new_row["to_address"], network_name):
-            #     new_row["to_is_contract"] = 1
-            #     contract_list.append(new_row["to_address"])
-
-            # print('contract_list: ', contract_list)
+            transaction_raw_df = pd.concat(
+                [transaction_raw_df, pd.DataFrame([new_row])], ignore_index=True
+            )
 
             with open('Transaction_raw.csv', 'a', newline='') as file:
                 writer = csv.writer(file)
                 
                 # Ghi list vào file
                 writer.writerow(new_row)
+            
+        remove_normal_address(address["address"], address["network_name"])
 
 
 def merge_network_name():
@@ -401,6 +379,21 @@ def merge_network_name():
     # Delete 'network_name'
     # transaction_raw_df = transaction_raw_df.drop("network_name", axis=1)
 
+def remove_normal_address(address_to_remove, network_to_remove):
+    # read csv
+    with open('Normal_address_raw.csv', 'r') as file:
+        reader = csv.DictReader(file)
+        rows = list(reader)
+
+    # remove row
+    filtered_rows = [row for row in rows if row['address'] != address_to_remove or row['network_name'] != network_to_remove]
+
+    # Write into csv file
+    with open('Normal_address_raw.csv', 'w', newline='') as file:
+        fieldnames = rows[0].keys()
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(filtered_rows)
 
 # Main code
 #############################################################
@@ -424,7 +417,6 @@ def merge_network_name():
 ######################## PART 2 #############################
 
 normal_address_df = pd.read_csv("Normal_address_raw.csv")
-transaction_raw_df = pd.read_csv("Transaction_raw_checkpoint.csv")
 transaction_raw_df = pd.read_csv("Transaction_raw.csv")
 
 start_time = time.time()
