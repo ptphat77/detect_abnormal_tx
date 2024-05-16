@@ -355,9 +355,8 @@ def collect_normal_transaction():
 
             with open('Transaction_raw.csv', 'a', newline='') as file:
                 writer = csv.writer(file)
-                
-                # Ghi list vào file
-                writer.writerow(new_row)
+                row_values = list(new_row.values())
+                writer.writerow(row_values)
             
         remove_normal_address(address["address"], address["network_name"])
 
