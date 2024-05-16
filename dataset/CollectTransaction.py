@@ -2,6 +2,7 @@ import pandas as pd
 import requests
 import time
 import threading
+import csv
 
 # Đọc file Excel
 data = pd.read_excel("./dataset/Table02-Transaction.xlsx")
@@ -376,9 +377,11 @@ def collect_normal_transaction():
 
             # print('contract_list: ', contract_list)
 
-            transaction_raw_df = pd.concat(
-                [transaction_raw_df, pd.DataFrame([new_row])], ignore_index=True
-            )
+            with open('Transaction_raw.csv', 'a', newline='') as file:
+                writer = csv.writer(file)
+                
+                # Ghi list vào file
+                writer.writerow(new_row)
 
 
 def merge_network_name():
@@ -422,10 +425,11 @@ def merge_network_name():
 
 normal_address_df = pd.read_csv("Normal_address_raw.csv")
 transaction_raw_df = pd.read_csv("Transaction_raw_checkpoint.csv")
+transaction_raw_df = pd.read_csv("Transaction_raw.csv")
 
 start_time = time.time()
 normal_address_index = -1
-threadNumber = 10
+threadNumber = 1
 threads = []
 for threadNo in range(threadNumber):
     thread = threading.Thread(target=collect_normal_transaction)
