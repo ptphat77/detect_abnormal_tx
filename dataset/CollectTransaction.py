@@ -275,11 +275,16 @@ def collect_normal_transaction():
     # print("data: ", data[0])
 
     while True:
-        if normal_address_index + 1 > normal_address_df_length:
-            return
+        normal_address_index_lock.acquire()
+        try:
+            if normal_address_index + 1 > normal_address_df_length:
+                return
 
-        normal_address_index += 1
-        address = normal_address_df.iloc[normal_address_index]
+            normal_address_index += 1
+            address = normal_address_df.iloc[normal_address_index]
+        finally:
+            normal_address_index_lock.release()
+
         print("##############################")
         contract_list = []
         network_name = address["network_name"]
@@ -353,12 +358,21 @@ def collect_normal_transaction():
                 [transaction_raw_df, pd.DataFrame([new_row])], ignore_index=True
             )
 
-            with open('Transaction_raw.csv', 'a', newline='') as file:
-                writer = csv.writer(file)
-                row_values = list(new_row.values())
-                writer.writerow(row_values)
-            
-        remove_normal_address(address["address"], address["network_name"])
+            transaction_raw_lock.acquire()
+            try:
+
+                with open('Transaction_raw.csv', 'a', newline='') as file:
+                    writer = csv.writer(file)
+                    row_values = list(new_row.values())
+                    writer.writerow(row_values)
+            finally:
+                transaction_raw_lock.release()
+        
+        normal_adress_lock.acquire()
+        try:
+            remove_normal_address(address["address"], address["network_name"])
+        finally:
+            normal_adress_lock.release()
 
 
 def merge_network_name():
@@ -418,15 +432,17 @@ def remove_normal_address(address_to_remove, network_to_remove):
 normal_address_df = pd.read_csv("Normal_address_raw.csv")
 transaction_raw_df = pd.read_csv("Transaction_raw.csv")
 
+transaction_raw_lock = threading.Lock()
+normal_adress_lock = threading.Lock()
+normal_address_index_lock = threading.Lock()
 start_time = time.time()
 normal_address_index = -1
-threadNumber = 1
+threadNumber = 10
 threads = []
 for threadNo in range(threadNumber):
     thread = threading.Thread(target=collect_normal_transaction)
     threads.append(thread)
     thread.start()
-    time.sleep(3)
 # collect_normal_transaction()
 # Waiting for all threads
 for thread in threads:
