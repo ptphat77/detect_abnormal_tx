@@ -299,6 +299,8 @@ def collect_normal_transaction():
         print(len(transantion_data))
         # print(transantion_data[0])
 
+        transaction_thread = pd.DataFrame(columns=transaction_columns)
+
         for item in transantion_data:
             # Debug/Search transaction by hash
             # if (
@@ -310,17 +312,17 @@ def collect_normal_transaction():
 
             # Check tx exists
             # print(item["hash"])
-            if type(item["hash"]) != str:
-                print("Checking tx failed")
-                exit()
+            # if type(item["hash"]) != str:
+            #     print("Checking tx failed")
+            #     exit()
 
-            network_names = transaction_raw_df.loc[
-                transaction_raw_df["hash"] == item["hash"], "network_name"
-            ].tolist()
+            # network_names = transaction_raw_df.loc[
+            #     transaction_raw_df["hash"] == item["hash"], "network_name"
+            # ].tolist()
             # print(network_names)
 
-            if network_name in network_names:
-                continue
+            # if network_name in network_names:
+            #     continue
 
             # Add item to transaction_raw_df
             new_row = {
@@ -358,15 +360,16 @@ def collect_normal_transaction():
                 [transaction_raw_df, pd.DataFrame([new_row])], ignore_index=True
             )
 
-            transaction_raw_lock.acquire()
-            try:
+            transaction_thread = pd.concat(
+                [transaction_thread, pd.DataFrame([new_row])], ignore_index=True
+            )
 
-                with open('Transaction_raw.csv', 'a', newline='') as file:
-                    writer = csv.writer(file)
-                    row_values = list(new_row.values())
-                    writer.writerow(row_values)
-            finally:
-                transaction_raw_lock.release()
+
+        transaction_raw_lock.acquire()
+        try:
+            transaction_thread.to_csv('Transaction_raw.csv', mode='a', header=False, index=False)
+        finally:
+            transaction_raw_lock.release()    
         
         normal_adress_lock.acquire()
         try:
@@ -443,6 +446,7 @@ for threadNo in range(threadNumber):
     thread = threading.Thread(target=collect_normal_transaction)
     threads.append(thread)
     thread.start()
+    time.sleep(3)
 # collect_normal_transaction()
 # Waiting for all threads
 for thread in threads:
