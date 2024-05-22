@@ -1,14 +1,14 @@
 import pandas as pd
 
 # Tải dataset addresses từ file CSV
-addresses_df = pd.read_csv('/content/drive/MyDrive/Blockchain_Dataset/address-feature-full.csv')
+addresses_df = pd.read_csv('extract_feature_address.csv')
 
 # Xóa dấu "
 addresses_df['address'] = addresses_df['address'].replace('"', '', regex=True)
-addresses_df['label'] = addresses_df['label'].replace('"', '', regex=True)
+# addresses_df['label'] = addresses_df['label'].replace('"', '', regex=True)
 
 # Tải dataset transactions từ file CSV
-transactions_df = pd.read_csv('/content/drive/MyDrive/Blockchain_Dataset/balanced_transaction.csv')
+transactions_df = pd.read_csv('balanced_transaction_dataset.csv')
 
 # Thay NaN thành 0
 # addresses_df = addresses_df.fillna(0)
@@ -59,4 +59,4 @@ for _, row in transactions_df.iterrows():
     print(f"Lần chạy thứ {loop_counter}")
     loop_counter += 1
 
-new_df.to_csv('/content/drive/MyDrive/Blockchain_Dataset/balanced_transaction-from-to-prefix.csv', index=False)
+new_df.to_csv('balanced_transaction-from-to-prefix.csv', index=False)

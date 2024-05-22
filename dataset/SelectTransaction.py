@@ -18,7 +18,7 @@ address_only_in_checkpoint_series = addresses_checkpoint[~addresses_checkpoint.i
 address_only_in_checkpoint_df = pd.DataFrame({'address': address_only_in_checkpoint_series})
 
 # Random ra 100 địa chỉ ngẫu nhiên
-address_only_in_checkpoint_df = address_only_in_checkpoint_df.sample(n=50, random_state=42)
+# address_only_in_checkpoint_df = address_only_in_checkpoint_df.sample(n=50, random_state=42)
 
 print('address_only_in_checkpoint_df: ', address_only_in_checkpoint_df.shape)
 
@@ -47,7 +47,7 @@ exploited_addresses = pd.concat([
 abnormal_addresses_df = exploited_addresses.assign(label=1)
 
 # Loại bỏ các địa chỉ trùng lặp
-abnormal_addresses_df.drop_duplicates(subset=['address'], inplace=True)
+abnormal_addresses_df.drop_duplicates(subset=['address', 'network_name'], inplace=True)
 
 print('abnormal_addresses_df: ', abnormal_addresses_df.shape)
 
@@ -66,9 +66,11 @@ print('transactions_has_abnormal_address: ',transactions_has_abnormal_address.sh
 ####### Merge transaction #######
 merged_df = pd.concat([transactions_has_abnormal_address, transactions_has_normal_address], ignore_index=True)
 
-# Loại bỏ các địa chỉ trùng lặp
-merged_df.drop_duplicates(subset=['hash'], inplace=True)
+# Loại bỏ các transaction trùng lặp
+merged_df.drop_duplicates(subset=['hash', 'network_name'], inplace=True)
 
 print('merged_df: ', merged_df.shape)
 
 merged_df.to_csv('graph_transaction_dataset.csv')
+
+

@@ -1,0 +1,3 @@
+                                                                      --> AddTransactionToNeo4j(extract_feature_address)  -- 
+CollectTransaction -> SelectTransaction (graph_transaction_dataset) --|                                                     |-> ExtractFeature(balanced_transaction-from-to-prefix)
+                                                                      --> BalanceDataset(balanced_transaction_dataset)    --
