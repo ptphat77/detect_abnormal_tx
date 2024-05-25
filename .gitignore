@@ -9,3 +9,9 @@
 /balanced_transaction_dataset.csv
 /used_normal_address.csv
 /extract_feature_address.csv
+/balanced_transaction-from-to-prefix.csv
+/ImageData
+__pycache__/
+venv/
+.idea/
+.ipynb_checkpoints/

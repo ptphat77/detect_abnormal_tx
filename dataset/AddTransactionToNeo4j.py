@@ -8,9 +8,6 @@ transaction_execution_commands = []
 
 count = 0
 for _, transaction in merged_df.iterrows():
-    # count += 1
-    # if count == 3:
-    #     break
     neo4j_create_statemenet = f"""
             MERGE (from:Address {{address: "{transaction.from_address}", network_name: "{transaction.network_name}"}})
             ON CREATE SET from.label = {transaction.from_exploit}
@@ -35,8 +32,11 @@ def execute_transactions(transaction_execution_commands):
     )
     session = data_base_connection.session()
     for i in transaction_execution_commands:
+        count += 1
+        if count % 100 == 0:
+            print('session ', i)
         session.run(i)
 
-
+print(len(transaction_execution_commands))
 execute_transactions(transaction_execution_commands)
-print(transaction_execution_commands[7])
+

@@ -607,12 +607,12 @@ def generate_image_data(data, index, num_row, num_column, coord, image_folder=No
         image_data[:, :, i] = 255 - image_data[:, :, i] # High values in the array format of image data correspond
                                                         # to high values in tabular data
         if image_folder is not None:
-            fig = plt.figure()
-            plt.imshow(data_i, cmap='gray', vmin=0, vmax=255)
-            plt.axis('scaled')
-            plt.savefig(fname=image_folder + '/' + file_name + '_' + samples[i] + '_image.png', bbox_inches='tight',
-                        pad_inches=0)
-            plt.close(fig)
+            # fig = plt.figure()
+            # plt.imshow(data_i, cmap='gray', vmin=0, vmax=255)
+            # plt.axis('scaled')
+            # plt.savefig(fname=image_folder + '/' + file_name + '_' + samples[i] + '_image.png', bbox_inches='tight',
+            #             pad_inches=0)
+            # plt.close(fig)
 
             pd.DataFrame(image_data[:, :, i], index=None, columns=None).to_csv(image_folder + '/' + file_name + '_'
                 + samples[i] + '_data.txt', header=None, index=None, sep='\t', line_terminator='\r\n')
